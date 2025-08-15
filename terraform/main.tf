@@ -26,8 +26,20 @@ provider "aws" {
 }
 
 provider "google" {
-  project = var.gcp_project_id
+  project = var.gcp_project_id != null ? var.gcp_project_id : "dummy-project-123456"
   region  = var.region
+  
+  # Use dummy service account credentials for AWS-only deployment
+  credentials = var.cloud_provider == "aws" ? jsonencode({
+    type = "service_account"
+    project_id = "dummy-project-123456"
+    private_key_id = "dummy"
+    private_key = "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC+K2hSuFpAdrJI\n-----END PRIVATE KEY-----"
+    client_email = "dummy@dummy-project-123456.iam.gserviceaccount.com"
+    client_id = "123456789"
+    auth_uri = "https://accounts.google.com/o/oauth2/auth"
+    token_uri = "https://oauth2.googleapis.com/token"
+  }) : null
 }
 
 # Local values for consistent naming

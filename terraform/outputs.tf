@@ -61,7 +61,7 @@ output "kubectl_config_command" {
 
 output "database_connection_string" {
   description = "Database connection string template"
-  value = "postgresql://${var.database_config.master_username}:[PASSWORD]@${module.database.endpoint}:${module.database.port}/${module.database.database_name}"
+  value = "postgresql://${var.database_config.master_username}:[PASSWORD]@${module.database.database_endpoint}:${module.database.database_port}/${module.database.database_name}"
   sensitive = true
 }
 

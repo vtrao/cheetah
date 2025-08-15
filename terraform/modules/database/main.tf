@@ -17,7 +17,7 @@ resource "aws_db_subnet_group" "main" {
 resource "aws_db_parameter_group" "main" {
   count = var.cloud_provider == "aws" ? 1 : 0
   
-  family = "postgres15"
+  family = "postgres14"
   name   = "${var.name_prefix}-db-params"
   
   parameter {

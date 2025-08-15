@@ -12,10 +12,9 @@ resource "aws_cloudwatch_log_group" "main" {
 
 # AWS CloudWatch Dashboard (optional)
 resource "aws_cloudwatch_dashboard" "main" {
-  count = var.cloud_provider == "aws" ? 1 : 0
-  
-  dashboard_name = "${var.name_prefix}-dashboard"
-  
+  count          = var.cloud_provider == "aws" ? 1 : 0
+  dashboard_name = "${var.cluster_name}-dashboard"
+
   dashboard_body = jsonencode({
     widgets = [
       {
@@ -24,7 +23,7 @@ resource "aws_cloudwatch_dashboard" "main" {
         y      = 0
         width  = 12
         height = 6
-        
+
         properties = {
           metrics = [
             ["AWS/EKS", "cluster_failed_request_count", "ClusterName", var.cluster_name],
@@ -34,12 +33,11 @@ resource "aws_cloudwatch_dashboard" "main" {
           stacked = false
           region  = var.region
           title   = "EKS Cluster Metrics"
+          period  = 300
         }
       }
     ]
   })
-  
-  tags = var.tags
 }
 
 # GCP Operations Suite (Stackdriver) - Placeholder
