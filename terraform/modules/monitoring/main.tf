@@ -51,13 +51,3 @@ resource "google_logging_project_sink" "main" {
   
   filter = "resource.type=gke_cluster"
 }
-
-# Output logging endpoint for AWS
-output "log_group_name" {
-  value = var.cloud_provider == "aws" ? (length(aws_cloudwatch_log_group.main) > 0 ? aws_cloudwatch_log_group.main[0].name : "") : ""
-}
-
-# Output dashboard URL for AWS
-output "dashboard_url" {
-  value = var.cloud_provider == "aws" ? (length(aws_cloudwatch_dashboard.main) > 0 ? "https://console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=${aws_cloudwatch_dashboard.main[0].dashboard_name}" : "") : ""
-}
