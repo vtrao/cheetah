@@ -32,6 +32,7 @@ variable "node_groups" {
     min_size       = number
     max_size       = number
     desired_size   = number
+    disk_size      = number
     launch_template = optional(object({
       id      = string
       version = string
@@ -45,6 +46,7 @@ variable "node_groups" {
       min_size       = 1
       max_size       = 3
       desired_size   = 2
+      disk_size      = 50
       launch_template = null
     }
   ]

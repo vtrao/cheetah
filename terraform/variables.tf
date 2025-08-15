@@ -65,22 +65,31 @@ variable "kubernetes_version" {
 
 variable "node_groups" {
   description = "Configuration for Kubernetes node groups"
-  type = map(object({
+  type = list(object({
+    name           = string
     instance_types = list(string)
+    capacity_type  = string # ON_DEMAND or SPOT
     min_size       = number
     max_size       = number
     desired_size   = number
     disk_size      = number
+    launch_template = optional(object({
+      id      = string
+      version = string
+    }))
   }))
-  default = {
-    main = {
+  default = [
+    {
+      name           = "general"
       instance_types = ["t3.medium"]  # AWS default, will be mapped for other clouds
+      capacity_type  = "ON_DEMAND"
       min_size       = 1
       max_size       = 3
       desired_size   = 2
       disk_size      = 50
+      launch_template = null
     }
-  }
+  ]
 }
 
 # Database configuration

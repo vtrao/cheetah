@@ -22,12 +22,10 @@ terraform {
 
 # Provider configurations
 provider "aws" {
-  count  = var.cloud_provider == "aws" ? 1 : 0
   region = var.region
 }
 
 provider "google" {
-  count   = var.cloud_provider == "gcp" ? 1 : 0
   project = var.gcp_project_id
   region  = var.region
 }
