@@ -1,0 +1,32 @@
+# Terraform working directory and temporary files
+.terraform/
+*.tfplan
+tfplan
+
+# Terraform state files (sensitive infrastructure state)
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Generated kubeconfig files (sensitive cluster access)
+kubeconfig-*
+
+# Environment-specific configuration (managed outside submodule)
+terraform/terraform.tfvars
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+.Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
