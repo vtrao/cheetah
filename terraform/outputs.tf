@@ -19,13 +19,13 @@ output "kubeconfig" {
 # Database outputs
 output "database_endpoint" {
   description = "Database endpoint"
-  value       = module.database.endpoint
+  value       = module.database.database_endpoint
   sensitive   = true
 }
 
 output "database_port" {
   description = "Database port"
-  value       = module.database.port
+  value       = module.database.database_port
 }
 
 output "database_name" {

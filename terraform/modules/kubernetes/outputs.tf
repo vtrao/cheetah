@@ -25,7 +25,7 @@ output "cluster_certificate_authority_data" {
 
 output "cluster_token" {
   description = "Token for cluster authentication (GCP only)"
-  value       = var.cloud_provider == "gcp" ? google_container_cluster.main[0].master_auth[0].access_token : null
+  value       = var.cloud_provider == "gcp" ? null : null
   sensitive   = true
 }
 
