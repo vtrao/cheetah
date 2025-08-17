@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: PROJECT_NAME-app
+  labels:
+    app: frontend
+    tier: frontend
+    environment: ENVIRONMENT
+    managed-by: cheetah
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+        tier: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: CONTAINER_REGISTRY/PROJECT_NAME/frontend:latest
+        ports:
+        - containerPort: 8080  # Use 8080 to avoid permission issues
+          protocol: TCP
+        env:
+        - name: REACT_APP_API_URL
+          value: "/api"
+        - name: ENVIRONMENT
+          value: "ENVIRONMENT"
+        # Health checks (nginx responds to any GET request)
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        # Resource limits
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        # Security context
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: false
+      # Pod-level security
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      # Restart policy
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: PROJECT_NAME-app
+  labels:
+    app: frontend
+    tier: frontend
+    environment: ENVIRONMENT
+    managed-by: cheetah
+spec:
+  selector:
+    app: frontend
+  ports:
+  - port: 80
+    targetPort: 8080  # Map port 80 to container's 8080
+    protocol: TCP
+    name: http
+  type: ClusterIP

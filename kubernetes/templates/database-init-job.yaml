@@ -1,0 +1,105 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: database-init
+  namespace: PROJECT_NAME-app
+  labels:
+    app: database-init
+    tier: database
+    environment: ENVIRONMENT
+spec:
+  template:
+    metadata:
+      labels:
+        app: database-init
+    spec:
+      containers:
+      - name: postgres-client
+        image: postgres:15
+        command: ["/bin/bash"]
+        args:
+          - -c
+          - |
+            echo "Starting database initialization..."
+            echo "Connecting to: postgresql://$DB_USER:*****@$DB_HOST:5432/$DB_NAME"
+            
+            # Wait for database to be ready
+            for i in {1..30}; do
+              if pg_isready -h "$DB_HOST" -p 5432 -U "$DB_USER"; then
+                echo "Database is ready!"
+                break
+              fi
+              echo "Waiting for database... attempt $i/30"
+              sleep 2
+            done
+            
+            # Run initialization SQL
+            psql "$DATABASE_URL" << 'EOF'
+            -- Create tables if they don't exist
+            CREATE TABLE IF NOT EXISTS ideas (
+                id SERIAL PRIMARY KEY,
+                content TEXT NOT NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT NOW()
+            );
+            
+            -- Add indexes for performance
+            CREATE INDEX IF NOT EXISTS idx_ideas_created_at ON ideas(created_at DESC);
+            
+            -- Add some sample data (only if table is empty)
+            INSERT INTO ideas (content, created_at) 
+            SELECT * FROM (VALUES 
+                ('Implement user authentication system', NOW()),
+                ('Add search feature for ideas', NOW()),
+                ('Create mobile application', NOW()),
+                ('Integrate with third-party services', NOW()),
+                ('Set up monitoring and alerting', NOW()),
+                ('Implement caching layer', NOW())
+            ) AS v(content, created_at)
+            WHERE NOT EXISTS (SELECT 1 FROM ideas LIMIT 1);
+            
+            -- Verify initialization
+            SELECT 'Database initialized successfully!' as status;
+            SELECT COUNT(*) as total_ideas FROM ideas;
+            SELECT 'Sample ideas:' as info;
+            SELECT id, content FROM ideas ORDER BY created_at DESC LIMIT 3;
+            EOF
+            
+            echo "Database initialization completed!"
+        env:
+        - name: DB_HOST
+          value: "database-service"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials-fallback
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials-fallback
+              key: password
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials-fallback
+              key: database
+        - name: DATABASE_URL
+          value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):5432/$(DB_NAME)"
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials-fallback
+              key: password
+      restartPolicy: Never
+      # Add tolerations for node constraints
+      tolerations:
+      - key: "node.kubernetes.io/not-ready"
+        operator: "Exists"
+        effect: "NoExecute"
+        tolerationSeconds: 300
+      - key: "node.kubernetes.io/unreachable"
+        operator: "Exists"
+        effect: "NoExecute"
+        tolerationSeconds: 300
+  backoffLimit: 4
+  activeDeadlineSeconds: 600

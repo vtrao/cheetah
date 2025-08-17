@@ -1,15 +1,6 @@
 # HashiCorp Vault Integration (Optional Advanced Setup)
 # This configuration adds Vault as a centralized secret management solution
 
-terraform {
-  required_providers {
-    vault = {
-      source  = "hashicorp/vault"
-      version = "~> 3.0"
-    }
-  }
-}
-
 # Vault provider configuration
 provider "vault" {
   # Vault address should be set via VAULT_ADDR environment variable

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: database-service
+  namespace: PROJECT_NAME-app
+  labels:
+    app: database
+    tier: database
+    environment: ENVIRONMENT
+    managed-by: cheetah
+spec:
+  type: ExternalName
+  externalName: RDS_ENDPOINT  # Will be replaced with actual RDS endpoint
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: postgres

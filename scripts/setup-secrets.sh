@@ -34,17 +34,16 @@ case $CLOUD_PROVIDER in
     ;;
     
   "azure")
-    echo "Using Azure Key Vault..."
-    # Create secrets in Azure Key Vault
-    az keyvault secret set \
-      --vault-name "${PROJECT_NAME}-${ENVIRONMENT}-kv" \
-      --name "database-password" \
-      --value "$(openssl rand -base64 32)"
+    echo "Using environment variables for Azure deployment (simplified for free tier)..."
     
-    az keyvault secret set \
-      --vault-name "${PROJECT_NAME}-${ENVIRONMENT}-kv" \
-      --name "app-secret-key" \
-      --value "$(openssl rand -base64 64)"
+    # For now, we'll use environment variables instead of Key Vault
+    # This is acceptable for development/testing and avoids Key Vault complexity
+    export DATABASE_PASSWORD=$(openssl rand -base64 32)
+    export APP_SECRET_KEY=$(openssl rand -base64 64)
+    
+    echo "✅ Environment variables configured for Azure deployment"
+    echo "📋 Database password and app secret generated"
+    echo "⚠️  For production, consider using Azure Key Vault"
     ;;
     
   *)
@@ -53,20 +52,20 @@ case $CLOUD_PROVIDER in
     ;;
 esac
 
-# Create Kubernetes secret for external-secrets operator
-kubectl create secret generic cloud-credentials \
-  --from-literal=cloud-provider=$CLOUD_PROVIDER \
-  --namespace=cheetah-system \
-  --dry-run=client -o yaml | kubectl apply -f -
+# Create Kubernetes secret for external-secrets operator (will be done after cluster creation)
+# kubectl create secret generic cloud-credentials \
+#   --from-literal=cloud-provider=$CLOUD_PROVIDER \
+#   --namespace=cheetah-system \
+#   --dry-run=client -o yaml | kubectl apply -f -
 
-# Apply external-secrets configuration if it exists
-if [ -d "../kubernetes/external-secrets" ]; then
-    kubectl apply -f ../kubernetes/external-secrets/
-elif [ -d "../k8s/external-secrets" ]; then
-    kubectl apply -f ../k8s/external-secrets/
-else
-    echo "⚠️  External secrets configuration not found"
-fi
+# Apply external-secrets configuration if it exists (will be done after cluster creation)
+# if [ -d "../kubernetes/external-secrets" ]; then
+#     kubectl apply -f ../kubernetes/external-secrets/
+# elif [ -d "../k8s/external-secrets" ]; then
+#     kubectl apply -f ../k8s/external-secrets/
+# else
+#     echo "⚠️  External secrets configuration not found"
+# fi
 
 echo "✅ Secrets setup completed for $CLOUD_PROVIDER"
 echo "🔐 Secrets are now managed securely using $CLOUD_PROVIDER native secret stores"

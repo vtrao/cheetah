@@ -102,7 +102,7 @@ variable "database_config" {
     allocated_storage = number
     database_name     = string
     master_username   = string
-    master_password   = string
+    master_password   = optional(string, null)
   })
   default = {
     engine            = "postgres"

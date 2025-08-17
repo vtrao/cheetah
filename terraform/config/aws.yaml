@@ -1,0 +1,27 @@
+# AWS-specific configuration
+provider:
+  name: aws
+  image_registry: ecr
+  
+database:
+  service_type: rds
+  parameter_group_family_map:
+    "13": postgres13
+    "14": postgres14
+    "15": postgres15
+    "16": postgres16
+
+monitoring:
+  logs_service: cloudwatch
+  metrics_service: cloudwatch
+  
+networking:
+  nat_gateway_required: true
+  load_balancer_type: nlb
+
+compute:
+  kubernetes_service: eks
+  node_instance_types:
+    small: t3.medium
+    medium: t3.large
+    large: t3.xlarge

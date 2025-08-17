@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: PROJECT_NAME-app
+  labels:
+    app: backend
+    tier: backend
+    environment: ENVIRONMENT
+    managed-by: cheetah
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+        tier: backend
+    spec:
+      containers:
+      - name: backend
+        image: CONTAINER_REGISTRY/PROJECT_NAME/backend:latest
+        ports:
+        - containerPort: 8000
+          protocol: TCP
+        env:
+        - name: DB_HOST
+          value: "database-service"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials-fallback
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials-fallback
+              key: password
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials-fallback
+              key: database
+        - name: ENVIRONMENT
+          value: "ENVIRONMENT"
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        # Resource limits
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        # Security context
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: false
+      # Pod-level security
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      # Restart policy
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: PROJECT_NAME-app
+  labels:
+    app: backend
+    tier: backend
+    environment: ENVIRONMENT
+    managed-by: cheetah
+spec:
+  selector:
+    app: backend
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  type: ClusterIP

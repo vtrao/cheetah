@@ -1,0 +1,26 @@
+# GCP-specific configuration  
+provider:
+  name: gcp
+  image_registry: gcr
+  
+database:
+  service_type: cloud_sql
+  tier_map:
+    small: db-f1-micro
+    medium: db-g1-small
+    large: db-custom-2-7680
+
+monitoring:
+  logs_service: stackdriver
+  metrics_service: stackdriver
+  
+networking:
+  nat_gateway_required: false  # Cloud NAT used instead
+  load_balancer_type: gclb
+
+compute:
+  kubernetes_service: gke
+  node_machine_types:
+    small: e2-medium
+    medium: e2-standard-2
+    large: e2-standard-4

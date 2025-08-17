@@ -13,16 +13,22 @@ echo "Cloud Provider: $CLOUD_PROVIDER"
 
 # Step 1: Setup cloud-native secrets
 echo "📋 Step 1: Setting up cloud-native secrets..."
-./setup-secrets.sh $CLOUD_PROVIDER $ENVIRONMENT $PROJECT_NAME
+# Get the script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+$SCRIPT_DIR/setup-secrets.sh $CLOUD_PROVIDER $ENVIRONMENT $PROJECT_NAME
 
 # Step 2: Copy secure terraform configuration
 echo "📋 Step 2: Configuring Terraform with secure variables..."
-if [ -f "../terraform/terraform.tfvars.template" ]; then
-    cp ../terraform/terraform.tfvars.template ../terraform/terraform.tfvars
+# Get the current script directory and find terraform directory
+TERRAFORM_DIR="$(dirname "${BASH_SOURCE[0]}")/../terraform"
+if [ -f "$TERRAFORM_DIR/terraform.tfvars.template" ]; then
+    cp "$TERRAFORM_DIR/terraform.tfvars.template" "$TERRAFORM_DIR/terraform.tfvars"
     echo "✅ Terraform variables template copied"
     echo "⚠️  Please review and customize terraform.tfvars before deployment"
+elif [ -f "$TERRAFORM_DIR/terraform.tfvars" ]; then
+    echo "✅ Terraform variables already exist"
 else
-    echo "❌ Terraform variables template not found"
+    echo "❌ Terraform variables template not found at $TERRAFORM_DIR"
     exit 1
 fi
 
@@ -58,8 +64,11 @@ esac
 
 # Step 4: Deploy infrastructure with secure secrets
 echo "📋 Step 4: Deploying infrastructure..."
-cd ..
-./deploy.sh $CLOUD_PROVIDER $ENVIRONMENT
+# We need to navigate to the parent directory of this script, which is cheetah/
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CHEETAH_DIR="$(dirname "$SCRIPT_DIR")"
+cd "$CHEETAH_DIR"
+scripts/deploy.sh $CLOUD_PROVIDER $ENVIRONMENT
 
 # Step 5: Setup External Secrets Operator
 echo "📋 Step 5: Deploying External Secrets Operator..."

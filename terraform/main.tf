@@ -111,7 +111,7 @@ module "database" {
   allocated_storage     = var.database_config.allocated_storage
   database_name         = var.database_config.database_name
   master_username       = var.database_config.master_username
-  master_password       = var.database_config.master_password
+  master_password       = var.cloud_provider == "aws" ? data.aws_ssm_parameter.db_password[0].value : var.database_config.master_password
   
   # Networking
   vpc_id             = module.networking.vpc_id
