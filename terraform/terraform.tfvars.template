@@ -1,0 +1,51 @@
+# SECURITY: Terraform Variables Template
+# This file should be copied to terraform.tfvars and customized per environment
+# NEVER commit terraform.tfvars with real secrets to version control
+
+# Development Environment Configuration
+
+# Cloud Provider
+cloud_provider = "aws"
+environment = "dev"
+
+# AWS Configuration
+region = "us-east-1"
+availability_zones = ["us-east-1a", "us-east-1b"]
+
+# Kubernetes Cluster
+cluster_name = "proj-app-dev"
+kubernetes_version = "1.28"
+node_instance_type = "t3.medium"
+node_desired_size = 2
+node_min_size = 1
+node_max_size = 4
+
+# Database - SECURITY: Use AWS SSM Parameter Store for secrets
+database_config = {
+  engine            = "postgres"
+  engine_version    = "15.14"
+  instance_class    = "db.t3.micro"
+  allocated_storage = 20
+  database_name     = "appdb"
+  master_username   = "dbadmin"
+  # master_password will be retrieved from AWS SSM Parameter Store
+  # Run: ../scripts/setup-secrets.sh aws dev cheetah
+}
+
+# Networking
+vpc_cidr = "10.0.0.0/16"
+enable_nat_gateway = true
+enable_vpn_gateway = false
+
+# Monitoring
+enable_cloudwatch_logs = true
+log_retention_days = 7
+
+# Tags
+tags = {
+  Environment = "development"
+  Project     = "proj-app"
+  Owner       = "development-team"
+  ManagedBy   = "cheetah"
+  CostCenter  = "development"
+}
